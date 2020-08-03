@@ -1,0 +1,14 @@
+global_settings:
+  refit: True
+  n_jobs: 16
+  random_state: 1126
+model:
+  name: XGBClassifier
+  args:
+    n_estimators: 1024
+    max_depth: 3
+    scale_pos_weight: 2.0
+    random_state: 1126
+    n_jobs: 4
+  param_grid:
+    null
