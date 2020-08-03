@@ -8,5 +8,7 @@
 ## Virtual Environment
 - Python version: `3.8.3`
 - Install requirements: `pip3 install -e .`
-- Usage: `scl8 hello`
-- TODO: add train, evaluate there
+
+## Training
+- Usage: `scl8 train --config CONFIG_FILE`
+- Refer to [configs](configs) for yaml config examples

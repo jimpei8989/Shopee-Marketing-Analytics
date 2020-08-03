@@ -3,6 +3,7 @@ scl8.egg-info/
 # too large
 data/
 models/
+submissions/
 
 # python cache
 __pycache__/
