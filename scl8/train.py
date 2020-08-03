@@ -21,7 +21,7 @@ def build_model(cfg, global_settings):
 
     clf = mapping[cfg.name](**cfg.args)
 
-    param_grid = cfg.param_grid if cfg.param_grid is not None else {}
+    param_grid = dict(cfg.param_grid) if cfg.param_grid is not None else {}
 
     return GridSearchCV(clf, param_grid,
                         scoring=make_scorer(matthews_corrcoef),
