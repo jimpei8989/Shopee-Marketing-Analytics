@@ -1,7 +1,11 @@
-global_settings:
+misc:
+  datadir: data/
+  model_path: models/xgboost-grid.pkl
+  prediction_path: submissions/xgboost-grid.csv
+  random_state: 1126
+grid_args:
   refit: True
   n_jobs: 16
-  random_state: 1126
 model:
   name: XGBClassifier
   args:

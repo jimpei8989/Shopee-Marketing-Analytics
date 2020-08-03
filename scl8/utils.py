@@ -1,5 +1,12 @@
 import sys
 import time
+import random
+
+import numpy as np
+
+def seed_everything(seed):
+    random.seed(seed)
+    np.random.seed(seed)
 
 def generate_submission(predictions, output_file):
     with open(output_file, 'w') as f:
