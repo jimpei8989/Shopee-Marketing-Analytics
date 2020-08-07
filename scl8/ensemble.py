@@ -17,13 +17,16 @@ def ensemble(cfg, datadir, prediction_path, mode='average'):
         with open(model_desc.model_path, 'rb') as f:
             model = pickle.load(f)
 
+        print(f'> model loaded: "{str(model)[:30]}" ...')
+
         if mode == 'average':
-            model_outputs.append(model.predict_proba(test_matrix))
+            model_outputs.append(model.predict_proba(test_matrix)[:, 1])
         elif mode == 'voting':
             model_outputs.append(model.predict(test_matrix))
 
         weights.append(model_desc.weight)
 
+    print(np.stack(model_outputs).shape)
     predictions = np.around(
         np.average(np.stack(model_outputs), axis=0, weights=weights)
     ).astype('int')

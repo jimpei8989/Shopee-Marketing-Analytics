@@ -6,3 +6,5 @@ models:
     weight: 1.0
   - model_path: models/lgbm-grid-best.pkl
     weight: 1.0
+  - model_path: models/catboost-grid-best.pkl
+    weight: 1.0

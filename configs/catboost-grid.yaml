@@ -1,0 +1,20 @@
+misc:
+  datadir: data/
+  cv_model_path: models/catboost-grid-cv.pkl
+  best_model_path: models/catboost-grid-best.pkl
+  prediction_path: submissions/catboost-grid.csv
+  random_state: 1126
+grid_args:
+  n_jobs: 16
+  cv: 8
+model:
+  name: CatBoostClassifier
+  args:
+    n_estimators: 128
+    random_state: 1126
+    auto_class_weights: Balanced
+    logging_level: Silent
+    eval_metric: MCC
+  param_grid:
+    max_depth: [2, 3]
+    learning_rate: [0.4, 0.2, 0.1]

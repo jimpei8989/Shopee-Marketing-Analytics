@@ -1,39 +1,40 @@
-import numpy as np
 import pickle
 from pprint import pprint
 
+import numpy as np
+from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer, accuracy_score, matthews_corrcoef
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC, SVC
 
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
-from imxgboost.imbalance_xgb import imbalance_xgboost
+from catboost import CatBoostClassifier
 
 from .data import get_all_data
 from .utils import seed_everything, generate_submission
 from .utils import EventTimer
 
-def build_model(cfg, grid_args, test_fold):
+def build_model(cfg, grid_args):
     mapping = {
         'RandomForestClassifier': RandomForestClassifier,
+        'LinearSVC': LinearSVC,
         'SVC': SVC,
         'XGBClassifier': XGBClassifier,
         'LGBMClassifier': LGBMClassifier,
-        'IMBXGBClassifier': imbalance_xgboost,
+        'CatBoostClassifier': CatBoostClassifier,
+        # 'IMBXGBClassifier': imbalance_xgboost,
     }
 
     clf = mapping[cfg.name](**cfg.args)
 
     param_grid = dict(cfg.param_grid) if cfg.param_grid is not None else {}
 
-    pds = PredefinedSplit(test_fold)
+    return GridSearchCV(clf, param_grid, **grid_args)
 
-    return GridSearchCV(clf, param_grid, cv=pds, **grid_args)
-
-def train(cfg, datadir, model_path, prediction_path, random_state):
+def train(cfg, datadir, cv_model_path, best_model_path, prediction_path, random_state):
     seed_everything(random_state)
 
     ((train_users, train_features), train_labels), (test_users, test_features), user_features = get_all_data(datadir)
@@ -42,14 +43,9 @@ def train(cfg, datadir, model_path, prediction_path, random_state):
     train_user_matrix = np.stack([user_features[user] for user in train_users])
     train_matrix = np.concatenate([train_user_matrix, train_features], axis=1)
 
-    train_num = train_matrix.shape[0]
+    train_x, val_x, train_y, val_y = train_test_split(train_matrix, train_labels, test_size=0.2)
 
-    val_indices = np.random.choice(train_num, size=int(0.2 * train_num), replace=False)
-    val_indices = set(val_indices)
-
-    test_fold = [-1 if i in val_indices else 0 for i in range(train_num)]
-
-    clf = build_model(cfg.model, cfg.grid_args, test_fold)
+    clf = build_model(cfg.model, cfg.grid_args)
     print(clf)
 
     with EventTimer('Fitting the model'):
@@ -71,12 +67,23 @@ def train(cfg, datadir, model_path, prediction_path, random_state):
     print(f'> val_acc: {accuracy_score(val_y, val_preds)}')
     print(f'> val_mcc: {matthews_corrcoef(val_y, val_preds)}')
 
-    with open(model_path, 'wb') as f:
+    with open(cv_model_path, 'wb') as f:
         pickle.dump(clf, f)
+
+    with EventTimer('Refitting model'):
+        best_clf = clone(clf.best_estimator_)
+        best_clf.fit(train_matrix, train_labels)
+
+    best_preds = best_clf.predict(train_matrix)
+    print(f'> best_acc: {accuracy_score(train_labels, best_preds)}')
+    print(f'> best_mcc: {matthews_corrcoef(train_labels, best_preds)}')
+
+    with open(best_model_path, 'wb') as f:
+        pickle.dump(best_clf, f)
 
     # Handle test data
     test_user_matrix = np.stack([user_features[user] for user in test_users])
     test_matrix = np.concatenate([test_user_matrix, test_features], axis=1)
 
-    test_preds = clf.predict(test_matrix)
+    test_preds = best_clf.predict(test_matrix)
     generate_submission(test_preds, prediction_path)
