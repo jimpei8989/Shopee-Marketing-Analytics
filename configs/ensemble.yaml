@@ -1,0 +1,8 @@
+misc:
+  datadir: data/
+  prediction_path: submissions/ensemble.csv
+models:
+  - model_path: models/xgboost-grid-best.pkl
+    weight: 1.0
+  - model_path: models/lgbm-grid-best.pkl
+    weight: 1.0

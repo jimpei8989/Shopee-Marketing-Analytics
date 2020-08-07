@@ -133,3 +133,8 @@ def get_all_data(datadir: str) -> Tuple[Any, ...]:
     test_features = get_test_data(os.path.join(datadir, 'test.csv'))
     user_features = get_user_data(os.path.join(datadir, 'users.csv'))
     return (train_features, train_labels), test_features, user_features
+
+def get_all_test_data(datadir: str) -> Tuple[Any, ...]:
+    test_features = get_test_data(os.path.join(datadir, 'test.csv'))
+    user_features = get_user_data(os.path.join(datadir, 'users.csv'))
+    return test_features, user_features

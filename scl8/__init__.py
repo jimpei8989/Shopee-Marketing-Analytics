@@ -4,6 +4,7 @@ from datetime import datetime
 from omegaconf import OmegaConf
 
 from .train import train
+from .ensemble import ensemble
 from .utils import seed_everything
 
 def main():
@@ -14,9 +15,11 @@ def main():
     elif args.mode == 'train':
         cfg = OmegaConf.load(args.config)
         train(cfg, **cfg.misc)
+    elif args.mode == 'ensemble':
+        cfg = OmegaConf.load(args.config)
+        ensemble(cfg, **cfg.misc)
     else:
         raise ValueError('Invalid mode passed by comandline arguments')
-
 
 def parse_arguments():
     parser = ArgumentParser()
